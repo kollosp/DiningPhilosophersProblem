@@ -1,1 +1,3 @@
-Przeczytaj mnie
+#Uruchomienie
+
+* kompilacja w katalogu Release
