@@ -11,18 +11,38 @@
 #include <math.h>
 
 #include "Board.h"
+#include "Player.h"
+
+
 
 class MainWindow
 {
-    Board board();
+    int consoleW = 80;
+    int consoleH = 24;
+    int winposX = 0;
+    int winposY = 0;
+
+    Board board;
+    WINDOW * mainwin = NULL;
+
+    std::vector<std::thread*> threads;
+    std::vector<PlayerInterface*> players;
+
+    bool working;
+
+    int getChar();
 
 public:
-    MainWindow(const Config& c);
+    MainWindow();
     ~MainWindow();
     void init();
+    void initPlayer();
+
 
     void draw();
+    void drawBoard();
     int run();
+    int run_getch();
 };
 
 #endif // MAINWINDOW_H

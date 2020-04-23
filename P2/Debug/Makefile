@@ -14,7 +14,7 @@ CC            = gcc
 CXX           = g++
 DEFINES       = -DQT_QML_DEBUG
 CFLAGS        = -pipe -g -Wall -W -fPIC $(DEFINES)
-CXXFLAGS      = -pipe -g -std=gnu++11 -Wall -W -fPIC $(DEFINES)
+CXXFLAGS      = -pipe -lncurses -std=c++11 -g -lncurses -std=gnu++11 -Wall -W -fPIC $(DEFINES)
 INCPATH       = -I../52-so2p2 -I. -I../../../../Qt/5.7/gcc_64/mkspecs/linux-g++
 QMAKE         = /home/pawel/Qt/5.7/gcc_64/bin/qmake
 DEL_FILE      = rm -f
@@ -36,7 +36,7 @@ DISTNAME      = 52-so2p21.0.0
 DISTDIR = /home/pawel/tematy/52-so2p/P2/Debug/.tmp/52-so2p21.0.0
 LINK          = g++
 LFLAGS        = 
-LIBS          = $(SUBLIBS)  
+LIBS          = $(SUBLIBS) -L/usr/include -lncurses -lpthread 
 AR            = ar cqs
 RANLIB        = 
 SED           = sed
@@ -50,10 +50,20 @@ OBJECTS_DIR   = ./
 
 SOURCES       = ../52-so2p2/main.cpp \
 		../52-so2p2/Board.cpp \
-		../52-so2p2/MainWindow.cpp 
+		../52-so2p2/MainWindow.cpp \
+		../52-so2p2/PlayerInterface.cpp \
+		../52-so2p2/Player.cpp \
+		../52-so2p2/Mob.cpp \
+		../52-so2p2/Manager.cpp \
+		../52-so2p2/MyTime.cpp 
 OBJECTS       = main.o \
 		Board.o \
-		MainWindow.o
+		MainWindow.o \
+		PlayerInterface.o \
+		Player.o \
+		Mob.o \
+		Manager.o \
+		MyTime.o
 DIST          = ../../../../Qt/5.7/gcc_64/mkspecs/features/spec_pre.prf \
 		../../../../Qt/5.7/gcc_64/mkspecs/common/unix.conf \
 		../../../../Qt/5.7/gcc_64/mkspecs/common/linux.conf \
@@ -199,9 +209,20 @@ DIST          = ../../../../Qt/5.7/gcc_64/mkspecs/features/spec_pre.prf \
 		../../../../Qt/5.7/gcc_64/mkspecs/features/yacc.prf \
 		../../../../Qt/5.7/gcc_64/mkspecs/features/lex.prf \
 		../52-so2p2/52-so2p2.pro Board.h \
-		MainWindow.h ../52-so2p2/main.cpp \
+		MainWindow.h \
+		PlayerInterface.h \
+		Player.h \
+		Mob.h \
+		Manager.h \
+		constants.h \
+		MyTime.h ../52-so2p2/main.cpp \
 		../52-so2p2/Board.cpp \
-		../52-so2p2/MainWindow.cpp
+		../52-so2p2/MainWindow.cpp \
+		../52-so2p2/PlayerInterface.cpp \
+		../52-so2p2/Player.cpp \
+		../52-so2p2/Mob.cpp \
+		../52-so2p2/Manager.cpp \
+		../52-so2p2/MyTime.cpp
 QMAKE_TARGET  = 52-so2p2
 DESTDIR       = 
 TARGET        = 52-so2p2
@@ -548,15 +569,43 @@ compiler_clean:
 ####### Compile
 
 main.o: ../52-so2p2/main.cpp ../52-so2p2/MainWindow.h \
-		../52-so2p2/Board.h
+		../52-so2p2/Board.h \
+		../52-so2p2/Player.h \
+		../52-so2p2/PlayerInterface.h \
+		../52-so2p2/constants.h \
+		../52-so2p2/MyTime.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../52-so2p2/main.cpp
 
 Board.o: ../52-so2p2/Board.cpp ../52-so2p2/Board.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Board.o ../52-so2p2/Board.cpp
 
 MainWindow.o: ../52-so2p2/MainWindow.cpp ../52-so2p2/MainWindow.h \
-		../52-so2p2/Board.h
+		../52-so2p2/Board.h \
+		../52-so2p2/Player.h \
+		../52-so2p2/PlayerInterface.h \
+		../52-so2p2/constants.h \
+		../52-so2p2/MyTime.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MainWindow.o ../52-so2p2/MainWindow.cpp
+
+PlayerInterface.o: ../52-so2p2/PlayerInterface.cpp ../52-so2p2/PlayerInterface.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o PlayerInterface.o ../52-so2p2/PlayerInterface.cpp
+
+Player.o: ../52-so2p2/Player.cpp ../52-so2p2/Player.h \
+		../52-so2p2/PlayerInterface.h \
+		../52-so2p2/Board.h \
+		../52-so2p2/constants.h \
+		../52-so2p2/MyTime.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Player.o ../52-so2p2/Player.cpp
+
+Mob.o: ../52-so2p2/Mob.cpp ../52-so2p2/Mob.h \
+		../52-so2p2/PlayerInterface.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Mob.o ../52-so2p2/Mob.cpp
+
+Manager.o: ../52-so2p2/Manager.cpp ../52-so2p2/Manager.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Manager.o ../52-so2p2/Manager.cpp
+
+MyTime.o: ../52-so2p2/MyTime.cpp ../52-so2p2/MyTime.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MyTime.o ../52-so2p2/MyTime.cpp
 
 ####### Install
 
