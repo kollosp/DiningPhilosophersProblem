@@ -12,7 +12,7 @@
 
 #include "Board.h"
 #include "Player.h"
-
+#include "Mob.h"
 
 
 class MainWindow
@@ -32,15 +32,19 @@ class MainWindow
 
     int getChar();
 
+    void endAll();
+
+    GameManager *manager;
+
 public:
     MainWindow();
     ~MainWindow();
     void init();
     void initPlayer();
 
+    void spawnMob();
 
     void draw();
-    void drawBoard();
     int run();
     int run_getch();
 };

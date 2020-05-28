@@ -6,6 +6,7 @@
 #include "Board.h"
 #include "constants.h"
 #include "MyTime.h"
+#include "Manager.h"
 
 class Player : public PlayerInterface
 {
@@ -17,13 +18,16 @@ class Player : public PlayerInterface
     int power = 10;
     bool working;
 
-    Board& board;
+    GameManager& manager;
+
+    MyTimer tm;
+    int _lives = 3;
 
 public:
-    Player(Board& b);
+    Player(GameManager& mm);
     virtual ~Player(){}
 
-    virtual void draw(WINDOW* wn);
+    virtual void draw(WINDOW* wn, int offsetX=0, int offsetY=0);
 
     virtual void notifyKeyPressed(int key);
 
@@ -35,6 +39,17 @@ public:
     virtual void end();
 
     void run();
+
+    virtual void clearClock();
+
+    virtual int getX() {return xPos;}
+    virtual int getY() {return yPos;}
+
+    void spawn();
+
+    virtual int lives(){return this->_lives ;}
+
+    virtual void getDamage(int dmg){this->_lives -= dmg;}
 };
 
 #endif // PLAYER_H

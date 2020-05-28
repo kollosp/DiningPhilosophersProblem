@@ -8,19 +8,9 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
-    for(PlayerInterface* p : players){
-        p->end();
-    }
-
-    for(std::thread* t : threads){
-        t->join();
-    }
-
-    for(PlayerInterface* p : players){
-        delete p;
-    }
-
+    endAll();
     endwin();
+    delete manager;
 }
 
 void MainWindow::init()
@@ -32,11 +22,17 @@ void MainWindow::init()
     start_color();
     init_pair(WALL_PAIR, COLOR_WHITE, COLOR_WHITE);
     init_pair(EMPTY_PAIR, COLOR_BLACK, COLOR_BLACK);
-    init_pair(PLAYER_PAIR, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(PLAYER_PAIR, COLOR_BLACK, COLOR_YELLOW);
     init_pair(POINT_PAIR, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(MOB_PAIR, COLOR_BLACK, COLOR_RED);
+    init_pair(MOB_HUNT_PAIR, COLOR_BLACK, COLOR_MAGENTA);
+    init_pair(MOB_WAITING_PAIR, COLOR_BLACK, COLOR_BLUE);
+    init_pair(SUPER_POINT_PAIR, COLOR_BLUE, COLOR_BLACK);
+    init_pair(SUPER_POINT_2_PAIR, COLOR_RED, COLOR_BLACK);
 
 
-    board.build(consoleW-2, consoleH-2);
+
+    board.build(consoleW/2, consoleH/2);
 
     std::string title = "Pacman";
     std::string footer = "build: " + std::string(__DATE__) + " " + std::string(__TIME__);
@@ -56,61 +52,45 @@ void MainWindow::init()
 
 void MainWindow::initPlayer()
 {
+    manager = new GameManager(board);
 
     for(unsigned int i=0;i<1;++i){
-
-        PlayerInterface *p = new Player(board);
+        PlayerInterface *p = new Player(*manager);
         threads.push_back(new std::thread(&PlayerInterface::run, p));
         players.push_back(p);
     }
 
+    manager->setPlayer(players[0]);
+
+    for(unsigned int i=0;i<5;++i){
+        spawnMob();
+    }
+}
+
+void MainWindow::spawnMob()
+{
+    PlayerInterface *p = new Mob(*manager, players.size());
+    threads.push_back(new std::thread(&PlayerInterface::run, p));
+    players.push_back(p);
+    manager->pushBackMob(p);
 }
 
 void MainWindow::draw()
 {
-    drawBoard();
+    board.draw(mainwin, 1, 1);
+
+    std::stringstream ss;
+    ss<<"Points left: "<<setw(4)<<board.getPoints()<<" | lives: "<<
+        manager->getPlayer()->lives()<<" | "<<manager->getHunters();
+    mvwaddstr(mainwin,consoleH-1,1,ss.str().c_str());
 
     for(PlayerInterface* p : players){
-        p->draw(mainwin);
+        p->draw(mainwin, 1,1);
     }
 
     wmove(mainwin, 0,0);
     wrefresh(mainwin);
 }
-
-void MainWindow::drawBoard()
-{
-    for(unsigned int y=0;y<board.getHeight();++y){
-
-        std::string row="";
-        for(unsigned int x=0;x<board.getWidth();++x){
-            if(board.get(y,x).checkIfWall()){
-
-                wattron(mainwin,COLOR_PAIR(WALL_PAIR));
-                mvwaddstr(mainwin,y+1,x+1,WALL_CHAR);
-                wattroff(mainwin, COLOR_PAIR(WALL_PAIR));
-
-            }else{
-                if(board.get(y,x).getPoints() > 0){
-
-                    wattron(mainwin, COLOR_PAIR(POINT_PAIR));
-                    mvwaddstr(mainwin,y+1,x+1,POINT_CHAR);
-                    wattroff(mainwin, COLOR_PAIR(POINT_PAIR));
-
-                }else{
-                    wattron(mainwin, COLOR_PAIR(EMPTY_PAIR));
-                    mvwaddstr(mainwin,y+1,x+1,EMPTY_CHAR);
-                    wattroff(mainwin, COLOR_PAIR(EMPTY_PAIR));
-                }
-            }
-        }
-    }
-
-    std::stringstream ss;
-    ss<<"Points left: "<<board.getPoints();
-    mvwaddstr(mainwin,consoleH-1,1,ss.str().c_str());
-}
-
 
 int MainWindow::getChar()
 {
@@ -123,14 +103,37 @@ int MainWindow::getChar()
     }
 }
 
+void MainWindow::endAll()
+{
+    for(PlayerInterface* p : players){
+        p->end();
+    }
+
+    for(std::thread* t : threads){
+            t->join();
+    }
+
+    for(PlayerInterface* p : players){
+        delete p;
+    }
+}
+
 int MainWindow::run()
 {
     working = true;
     while(working){
         run_getch();
 
-        if(board.getPoints() == 0){
+        if(board.getPoints() < 5 ||
+           manager->getPlayer()->lives() == 0){
             working = 0;
+            manager->unlockMobs();
+        }
+
+        switch(manager->manage()){
+        case 1:
+            spawnMob();
+            break;
         }
 
         draw();
@@ -145,7 +148,6 @@ int MainWindow::run_getch()
     int c = getChar();
 
     if(c > 0){
-        //std::cout<<c<<(c == 113)<<std::endl;
 
         //notify players
         for(PlayerInterface* p : players){
@@ -156,6 +158,16 @@ int MainWindow::run_getch()
         //Q
         case 113:
             working = false;
+            manager->unlockMobs();
+            break;
+
+        case 'e':
+            endAll();
+            break;
+
+        //lock mobs
+        case 'z':
+            manager->lockMobs();
             break;
         default:
             break;

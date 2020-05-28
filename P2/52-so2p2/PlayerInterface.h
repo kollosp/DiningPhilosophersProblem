@@ -11,9 +11,6 @@ public:
     PlayerInterface();
     virtual ~PlayerInterface(){}
 
-    int getX();
-    int getY();
-
     /**
      * Used by manager to determinate who win the fight
      * @brief getPower
@@ -21,6 +18,8 @@ public:
      */
     int getPower();
 
+    virtual int getX() = 0;
+    virtual int getY() = 0;
 
     /**
      * Make next move
@@ -35,7 +34,7 @@ public:
      * @brief draw
      * @param wn
      */
-    virtual void draw(WINDOW* wn) = 0;
+    virtual void draw(WINDOW* wn, int offsetX=0, int offsetY=0) = 0;
 
     /**
      * Notify that somenthink happend
@@ -51,6 +50,14 @@ public:
     virtual void run() = 0;
 
     virtual void end() = 0;
+
+    virtual void clearClock() = 0;
+
+    virtual void spawn(){}
+    virtual void getDamage(int dmg){}
+    virtual int lives(){return 0;}
+
+    virtual int getId(){return 0;}
 };
 
 #endif // PLAYERINTERFACE_H
