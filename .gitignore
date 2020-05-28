@@ -8,6 +8,10 @@
 
 52-so2p
 
+
+P2/Debug
+P2/Release
+
 # Compiled Object files
 *.slo
 *.lo
