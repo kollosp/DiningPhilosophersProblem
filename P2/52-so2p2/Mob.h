@@ -60,6 +60,8 @@ public:
     int getId(){return id;}
 
     void randomizeTimes();
+
+    virtual int timeLeft();
 };
 
 #endif // MOB_H

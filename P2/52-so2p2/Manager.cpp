@@ -3,7 +3,9 @@
 
 GameManager::GameManager(Board &b):
     board(b)
-{}
+{
+    superPlayerTimer.update();
+}
 
 GameManager::~GameManager()
 {
@@ -13,28 +15,29 @@ GameManager::~GameManager()
 std::unique_lock<std::mutex>* GameManager::mobWait()
 {
     std::unique_lock<std::mutex>* lk = new std::unique_lock<std::mutex>(mobMutext);
-    mobCV.wait((*lk), []{return true;});
+    mobCV.wait((*lk), [this]{return !mobsLocked;});
     return lk;
 }
 
 void GameManager::mobNotify(std::unique_lock<std::mutex>*  lk)
 {
     lk->unlock();
-    mobCV.notify_one();
+    mobCV.notify_all();
 }
 
 void GameManager::lockMobs()
 {
     //lock all mobs
     tm.update();
-    if(mobsLocked  == false)
-        lockMobsLck = mobWait();
+    //if(mobsLocked  == false)
+    //    lockMobsLck = mobWait();
     mobsLocked = true;
 }
 
 void GameManager::lock()
 {
-    std::lock_guard<std::mutex> guard(mobMutext);
+    //std::lock_guard<std::mutex> guard(mobMutext);
+
 }
 
 void GameManager::unlock()
@@ -101,8 +104,8 @@ int GameManager::notifyPlayerBeing(PlayerInterface* p, unsigned int y, unsigned 
                 player->getDamage(-1);
                 break;
             case 3:
-                superPlayerTimer.update();
-                superPlayer = true;
+                //superPlayerTimer.update();
+                //superPlayer = true;
                 break;
             }
         }
@@ -178,9 +181,11 @@ bool GameManager::checkMove(PlayerInterface *p, unsigned int y, unsigned int x)
 
 void GameManager::unlockMobs()
 {
-    if(mobsLocked ){
+    if(mobsLocked){
         mobsLocked = false;
-        mobNotify(lockMobsLck);
+        //mobNotify(lockMobsLck);
+
+        mobCV.notify_all();
 
         for(unsigned int i=0;i<mobs.size();++i)
             mobs[i]->clearClock();
@@ -194,6 +199,13 @@ void GameManager::askForHunt(PlayerInterface* p)
     if(hunters.size() == 0){
         //notify mob can starts hunting
         p->notifyKeyPressed(0);
+    }
+
+    for(unsigned int i=0;i<hunters.size();++i){
+        if(hunters[i]->timeLeft() > p->timeLeft()){
+            hunters.insert(hunters.begin() + i, p);
+            return;
+        }
     }
 
     hunters.push_back(p);

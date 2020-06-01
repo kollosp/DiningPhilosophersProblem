@@ -58,6 +58,8 @@ public:
     virtual int lives(){return 0;}
 
     virtual int getId(){return 0;}
+
+    virtual int timeLeft(){return 0;}
 };
 
 #endif // PLAYERINTERFACE_H

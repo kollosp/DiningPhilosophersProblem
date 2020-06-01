@@ -25,7 +25,7 @@ class GameManager
     MyTimer tm;
     Board &board;
 
-    bool superPlayer = true;
+    bool superPlayer = false;
     MyTimer superPlayerTimer;
 
     /**

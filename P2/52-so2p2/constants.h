@@ -20,4 +20,9 @@
 #define SUPER_POINT_CHAR "o"
 #define SUPER_POINT_2_CHAR "x"
 
+#define MAX_MOB_COUNT 15
+
+
+#define MODE 1 //1-normal, 2-mobs spawn and die
+
 #endif // CONSTANTS_H

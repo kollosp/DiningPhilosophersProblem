@@ -38,6 +38,7 @@ void Mob::changeDirection()
                 xSpeed = 0;
             }
             break;
+
         case 1:
             bufCoord = xPos + 1;
             if(manager.checkMove(this,yPos, bufCoord)){
@@ -143,49 +144,52 @@ void Mob::run()
             }
         }
 
-        float timeElapsed = liveCircleTimer.timeElapsed();
+        if(MODE == 2){
 
-        if(timeElapsed > timeToDie){
-            state = 3;
-        }
+            float timeElapsed = liveCircleTimer.timeElapsed();
 
-        switch (state) {
-        //simple walking
-        case 0:
-            if(timeElapsed > timeToHunt){
-                state = 1;
-                manager.askForHunt(this);
+            if(timeElapsed > timeToDie){
+                state = 3;
             }
 
-           break;
-        //waiting for hunt permission
-        case 1:
-            //do nothing wait for manager signal
-            break;
-        //hunting
-        case 2:
-
-            if(xPos != lastx || yPos != lasty){
-                if(manager.notifyPlayerBeing(this, yPos,xPos) == 1){
-                    liveCircleTimer.update();
-                    state = 0;
-                    randomizeTimes();
+            switch (state) {
+            //simple walking
+            case 0:
+                if(timeElapsed > timeToHunt){
+                    state = 1;
+                    manager.askForHunt(this);
                 }
+
+               break;
+            //waiting for hunt permission
+            case 1:
+                //do nothing wait for manager signal
+                break;
+            //hunting
+            case 2:
+
+                if(xPos != lastx || yPos != lasty){
+                    if(manager.notifyPlayerBeing(this, yPos,xPos) == 1){
+                        liveCircleTimer.update();
+                        state = 0;
+                        randomizeTimes();
+                    }
+                }
+
+                break;
+            //died
+            case 3:
+                _lives = 0;
+                working = false;
+                xPos = -1;
+                yPos = -1;
+
+                manager.notifyPlayerDied(this);
+                break;
+
+            default:
+                break;
             }
-
-            break;
-        //died
-        case 3:
-            _lives = 0;
-            working = false;
-            xPos = -1;
-            yPos = -1;
-
-            manager.notifyPlayerDied(this);
-            break;
-
-        default:
-            break;
         }
 
         //mutex unlock
@@ -214,4 +218,11 @@ void Mob::randomizeTimes()
 {
     timeToHunt = rand() % 15000;
     timeToDie = rand() % 25000 + timeToHunt;
+}
+
+int Mob::timeLeft()
+{
+    if(state == 1){
+        return (timeToDie - liveCircleTimer.timeElapsed());
+    }
 }

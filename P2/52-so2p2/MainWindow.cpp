@@ -8,7 +8,7 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
-    endAll();
+
     endwin();
     delete manager;
 }
@@ -132,7 +132,8 @@ int MainWindow::run()
 
         switch(manager->manage()){
         case 1:
-            spawnMob();
+            if(players.size()<MAX_MOB_COUNT + 1 && MODE == 2)
+                spawnMob();
             break;
         }
 
@@ -140,6 +141,8 @@ int MainWindow::run()
         std::this_thread::sleep_for (std::chrono::milliseconds(20));
     }
 
+    manager->unlockMobs();
+    endAll();
     return 0;
 }
 

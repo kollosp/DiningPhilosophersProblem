@@ -500,7 +500,9 @@ int main(int argc, char *argv[])
         int c = getChar();
 
         if(c == 'q'){
+            //close procedure
             WORK = false;
+            //unlock all locked cookers
             ORDERS = cookers.size();
             orderCondVar.notify_all();
         }

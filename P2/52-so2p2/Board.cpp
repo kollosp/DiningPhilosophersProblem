@@ -25,7 +25,6 @@ void Board::buildRightSite()
             }
         }
     }
-
 }
 
 void Board::copyRightSite()
